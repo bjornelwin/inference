@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #ffffff;
+            background-image: url('http://127.0.0.1:5000/static/data/images/329388665_1620476595058647_6490111430115302697_n.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
+
+        nav {
+            background-color: #666;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0 10px;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        #resultBox{
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Welcome to My Simple Website</h1>
+    </header>
+    <nav>
+        <a href="main.html">Home</a>
+        <a href="images.html">Images</a>
+        <a href="opencv.html">OpenCv</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+    <main>
+        <h2>Text converter</h2>
+        <p>This is a simple website created as an example.</p>
+        <form id="textForm" action="http://127.0.0.1:5000/" method="post">
+            <label for="userInput">Enter your text:</label><br>
+            <input type="text" id="userInput" name="userInput"><br>
+            <input type="submit" value="Submit">
+        </form>
+        <div id="resultBox">Output text </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Simple Website. All rights reserved.</p>
+    </footer>
+   <script>
+    document.getElementById('textForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var userInput = document.getElementById('userInput').value;
+        fetch('/', {
+            method: 'POST',
+            body: new URLSearchParams({
+                userInput: userInput
+            }),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+        .then(response => {
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById('resultBox').innerHTML = data;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+</script>
+
+</body>
+
+</html>
