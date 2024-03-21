@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 model = yolo()
 coco_classes, color_pans = ClassesAndColors()
-camera = cv2.VideoCapture(0)#'/dev/video1')
+camera = cv2.VideoCapture(1)#'/dev/video1')
 
 def process_text(input_text):
     # Your Python function to process the text goes here
