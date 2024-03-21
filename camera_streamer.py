@@ -20,7 +20,7 @@ def draw_boxes(frame, boxes, scores, classes, class_names, color_pans):
         
 def main():
     # Initialize the USB camera
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture('/dev/video1')
 
     # Check if the camera is opened successfully
     if not cap.isOpened():

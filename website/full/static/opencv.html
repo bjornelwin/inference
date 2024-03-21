@@ -7,17 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple Website</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-
         header {
             background-color: #333;
             color: #fff;
-            padding: 20px;
+            padding: 5px;
             text-align: center;
         }
 
@@ -35,7 +28,7 @@
         }
 
         main {
-            padding: 20px;
+            padding: 10px;
         }
 
         footer {
@@ -52,31 +45,48 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #000000;
+            background-color: #f0f0f0;
             color: #ffffff;
             background-image: url('http://127.0.0.1:5000/static/data/images/starw.jpg');
             background-size: cover;
-            background-position: top;
+            background-position: center;
+        }
+
+        .description h2,
+        .description p {
+            margin: 5px 0;
+            /* Adjust the top and bottom margins */
+            padding: 5px 0;
+            /* Adjust the top and bottom padding */
         }
 
         .main-panel {
-            padding: 30px;
+            padding: 20px;
             background-color: #212121;
-            max-width: 700px;
+            max-width: 800px;
+            max-height: 700px;
             margin: 20px auto;
         }
 
         .nav-holder {
-            padding-top: 20px;
-            padding-bottom: 20px;
-            text-align: right;
+            padding-top: 15px;
+            padding-bottom: 15px;
+            text-align: center;
+            /* Center the content horizontally */
+        }
+
+        .nav-holder b {
+            display: inline-block;
+            /* Ensure each child element is on its own line and centered */
+            margin: 0 10px;
+            /* Add margin between the elements if needed */
         }
 
         b {
             text-decoration: none;
             background-color: #ffea00;
             color: #000000;
-            padding: 20px;
+            padding: 15px;
         }
 
         b:hover {
@@ -88,8 +98,18 @@
             position: relative;
         }
 
+        .image-holder {
+            max-height: 450px;
+            text-align: center;
+            /* Center the image horizontally */
+        }
+
         img {
-            width: 100%;
+            display: inline-block;
+            /* Ensure the image is treated as a block element */
+            height: 500px;
+            margin: 0 auto;
+            /* Center the image horizontally */
             transition: transform 0.25s ease;
         }
 
@@ -103,7 +123,7 @@
 <body>
 
     <header>
-        <h1>Images</h1>
+        <h1>WebCam stream</h1>
     </header>
     <nav>
         <a href="main.html">Home</a>
@@ -113,30 +133,28 @@
         <a href="contact.html">Contact</a>
     </nav>
     <main>
-
-
         <div class="main-panel">
-            <div class="title">
-                <h1>This is a title</h1>
-            </div>
             <div class="image-holder image-container">
-                <img id="zoom-image" src="http://127.0.0.1:5000/static/data/images/HUND.jpg"
-                    alt="Description of the image">
-            </div>
-
-            <div class="nav-holder">
-                <!-- Navigation links -->
-                <b href="#" id="prev-image">&lt; Prev</b>
-                <b href="#" id="next-image">Next &gt;</b>
-                <b href="#">Get description</b>
-                <b href="#" id="index-button">1</b>
-            </div>
-            <!-- Description section -->
-            <div class="description">
-                <h2>This is a sub heading</h2>
-                <p>This is a description</p>
-            </div>
-
+            <img id="zoom-image" src="/video_feed" alt="Description of the image">
+        </div>
+        
+        
+        <div class="nav-holder">
+            <!-- Navigation links -->
+            <b href="#" id="prev-image">&lt; Prev</b>
+            <b href="#" id="next-image">Next &gt;</b>
+            <b href="#" id="detect-objects">Detect objects</b>
+            <b href="#" id="get-description">Get Description</b>
+            <b href="#" id="index-button">1</b>
+        </div>
+        <!-- Description section -->
+        <div class="description">
+            <h2>Image descriptions according to Ai</h2>
+            <p id="image-description">Press describe to get description:</p>
+            <p id="image-tags">Press detect to see objects:</p>
+        </div>
+    </div>
+        
     </main>
     <footer>
         <p>&copy; 2024 Simple Website. All rights reserved.</p>
@@ -163,49 +181,7 @@
             image.classList.remove('zoomed');
         });
     </script>
-    <script>
-        let currentIndex = 0;
-
-        // Fetch the list of image paths from the Flask backend
-        fetch('/image_list')
-            .then(response => response.json())
-            .then(data => {
-                const images = data;
-
-                document.getElementById('prev-image').addEventListener('click', function (event) {
-                    event.preventDefault();
-                    currentIndex = (currentIndex - 1 + images.length) % images.length;
-                    showImage(currentIndex);
-                });
-
-                document.getElementById('next-image').addEventListener('click', function (event) {
-                    event.preventDefault();
-                    currentIndex = (currentIndex + 1) % images.length;
-                    showImage(currentIndex);
-                });
-
-                document.getElementById('index-button').addEventListener('click', function (event) {
-                    event.preventDefault();
-                    const newIndex = prompt('Enter the image index (1 to ' + images.length + '):');
-                    if (newIndex !== null && !isNaN(newIndex)) {
-                        currentIndex = Math.max(0, Math.min(parseInt(newIndex) - 1, images.length - 1));
-                        showImage(currentIndex);
-                    }
-                });
-
-                function showImage(index) {
-                    const imageHolder = document.querySelector('.image-holder');
-                    const img = imageHolder.querySelector('img');
-                    img.src = images[index];
-                    document.getElementById('index-button').innerText = index + 1; // Update button text
-                }
-
-                showImage(currentIndex);
-            })
-            .catch(error => console.error('Error fetching image list:', error));
-    </script>
-
-
+   
 
 </body>
 

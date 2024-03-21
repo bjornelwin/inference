@@ -1,16 +1,16 @@
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, Response
 import os
 import cv2
 from inference_models import yolo
 from read_classes_and_colors import ClassesAndColors
 import numpy as np
 
+
 app = Flask(__name__)
 
 model = yolo()
 coco_classes, color_pans = ClassesAndColors()
-
-image_paths = []
+camera = cv2.VideoCapture(0)#'/dev/video1')
 
 def process_text(input_text):
     # Your Python function to process the text goes here
@@ -92,7 +92,50 @@ def get_description():
     
     return jsonify({'description': image_filename})
 
+def generate_frames():
+    start_image = False
+    while True:
+        # Read the camera frame
+        success, frame = camera.read()
+        if not success:
+            if not start_image:
+                print("Error reading frame:", frame)
+
+                image_filename = os.listdir(IMAGES_FOLDER)[2]
+                image_path = os.path.join(IMAGES_FOLDER, image_filename)
+                # Read the image using OpenCV
+                frame = cv2.imread(image_path)
+                boxes, scores, classes = model.infer(frame) 
+                frame = draw_boxes(frame, boxes, scores, classes, coco_classes, color_pans)
+                ret, buffer = cv2.imencode('.jpg', frame)
+                frame = buffer.tobytes()
+                start_image = True
+            else:
+                break
+            
+        else:
+            boxes, scores, classes = model.infer(frame) 
+            frame = draw_boxes(frame, boxes, scores, classes, coco_classes, color_pans)
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    camera.release()
+    
+@app.route('/')
+def index2():
+    return render_template('cv2.html')
+
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)  # Use a different port, such as 8000
+
+
+
 
