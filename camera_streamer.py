@@ -13,8 +13,6 @@ def draw_boxes(frame, boxes, scores, classes, class_names, color_pans):
         xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
         class_index = int(classes[i])
         class_name = class_names[class_index]
-        print(color_pans)
-        print(class_index % len(color_pans))
         color = color_pans[class_index % len(color_pans)]
         cv2.rectangle(boxed_image, (xmin, ymin), (xmax, ymax), color, 2)
         cv2.putText(boxed_image, f"{class_name} {scores[i]:.2f}", (xmin, ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)

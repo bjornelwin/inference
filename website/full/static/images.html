@@ -28,7 +28,7 @@
         }
 
         main {
-            padding: 20px;
+            padding: 10px;
         }
 
         footer {
@@ -52,10 +52,19 @@
             background-position: center;
         }
 
+        .description h2,
+        .description p {
+            margin: 5px 0;
+            /* Adjust the top and bottom margins */
+            padding: 5px 0;
+            /* Adjust the top and bottom padding */
+        }
+
         .main-panel {
             padding: 20px;
             background-color: #212121;
             max-width: 800px;
+            max-height: 700px;
             margin: 20px auto;
         }
 
@@ -77,7 +86,7 @@
             text-decoration: none;
             background-color: #ffea00;
             color: #000000;
-            padding: 20px;
+            padding: 15px;
         }
 
         b:hover {
@@ -90,6 +99,7 @@
         }
 
         .image-holder {
+            max-height: 450px;
             text-align: center;
             /* Center the image horizontally */
         }
@@ -125,7 +135,7 @@
     <main>
         <div class="main-panel">
             <div class="image-holder image-container">
-                <img id="zoom-image" src="http://127.0.0.1:5000/static/data/images/HUND.jpg"
+                <img id="zoom-image" src=None
                     alt="Description of the image">
             </div>
 
@@ -139,9 +149,10 @@
             </div>
             <!-- Description section -->
             <div class="description">
-                <h2>This is a sub heading</h2>
-                <p id="image-description">This description is generated using ai:</p>
-            </div>
+                <h2>Image descriptions according to Ai</h2>
+                <p id="image-description">Press describe to get description:</p>
+                <p id="image-tags">Press detect to see objects:</p>
+        </div>
 
     </main>
     <footer>
@@ -177,25 +188,30 @@
             .then(response => response.json())
             .then(data => {
                 const images = data.paths;
-                
+
                 document.getElementById('prev-image').addEventListener('click', function (event) {
                     event.preventDefault();
                     currentIndex = (currentIndex - 1 + images.length) % images.length;
-                    getImageDescription(currentIndex); // Get description for the newly displayed image
                     showImage(currentIndex);
+                    resetText();
                 });
 
                 document.getElementById('next-image').addEventListener('click', function (event) {
                     event.preventDefault();
                     currentIndex = (currentIndex + 1) % images.length;
-                    getImageDescription(currentIndex); // Get description for the newly displayed image
                     showImage(currentIndex);
+                    resetText();
+
                 });
-                
+
+                document.getElementById('detect-objects').addEventListener('click', function (event) {
+                    detectObjects(currentIndex);
+                });
+
                 document.getElementById('get-description').addEventListener('click', function (event) {
                     getImageDescription(currentIndex);
                 });
-                
+
                 document.getElementById('index-button').addEventListener('click', function (event) {
                     event.preventDefault();
                     const newIndex = prompt('Enter the image index (1 to ' + images.length + '):');
@@ -220,18 +236,28 @@
                             'Content-Type': 'application/json'
                         }
                     })
-                    .then(response => response.json())
-                    .then(data => {
+                        .then(response => response.json())
+                        .then(data => {
+                            const imageHolder = document.querySelector('.image-holder');
+                            const img = imageHolder.querySelector('img');
+                            img.src = data.path;
+                            document.getElementById("image-tags").innerText = "This image contains [" + data.classes + "] according to yolov3"
                             // Handle the response data as needed
                             console.log('Detected objects:', data);
                         })
                         .catch(error => console.error('Error detecting objects:', error));
-                    }
+                }
+
+                function resetText() {
+                    document.getElementById("image-tags").innerText = "Press detect to see objects:"
+                    document.getElementById("image-description").innerText = "Press describe to get description:"
+                }
                 // Function to update the description section with the received description
                 function updateDescription(description) {
-                    document.getElementById('image-description').innerText = "This description is generated using ai: " + description;
+                    document.getElementById('image-description').innerText = "This image contains [" + description + "] according to text_generator";
                 }
-                
+
+
                 // Function to handle the AJAX request to get image description
                 // Function to handle the AJAX request to get image description
                 function getImageDescription(index) {
@@ -242,18 +268,17 @@
                             'Content-Type': 'application/json'
                         }
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update the description section with the received description (image filename)
-                        updateDescription(data.description); // Use data.description to access the description
-                    })
-                    .catch(error => console.error('Error getting image description:', error));
+                        .then(response => response.json())
+                        .then(data => {
+                            // Update the description section with the received description (image filename)
+                            updateDescription(data.description); // Use data.description to access the description
+                        })
+                        .catch(error => console.error('Error getting image description:', error));
                 }
                 // Function to handle the AJAX request to detect objects
-                
-                
+
+
                 showImage(currentIndex);
-                getImageDescription(currentIndex)
             })
             .catch(error => console.error('Error fetching image list:', error));
 

@@ -1,6 +1,14 @@
 from flask import Flask, request, render_template, jsonify
 import os
+import cv2
+from inference_models import yolo
+from read_classes_and_colors import ClassesAndColors
+import numpy as np
+
 app = Flask(__name__)
+
+model = yolo()
+coco_classes, color_pans = ClassesAndColors()
 
 image_paths = []
 
@@ -31,16 +39,47 @@ def get_image_list():
     # Return the list of image paths as JSON
     return jsonify({"paths": image_paths,"descriptions": image_paths})
 
+def draw_boxes(frame, boxes, scores, classes, class_names, color_pans):
+    boxed_image = np.copy(frame)
+    for i in range(len(boxes)):
+        box = boxes[i]
+        ymin, xmin, ymax, xmax = box
+        xmin, ymin, xmax, ymax = int(xmin), int(ymin), int(xmax), int(ymax)
+        class_index = int(classes[i])
+        class_name = class_names[class_index]
+        color = color_pans[class_index % len(color_pans)]
+        cv2.rectangle(boxed_image, (xmin, ymin), (xmax, ymax), color, 2)
+        cv2.putText(boxed_image, f"{class_name} {scores[i]:.2f}", (xmin, ymin - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+    return boxed_image
+
 @app.route('/detect_objects', methods=['GET', 'POST'])
 def detect_objects():
     # Get the index parameter from the request
     index = request.json['index']
+    image_filename = os.listdir(IMAGES_FOLDER)[index]
+    image_path = os.path.join(IMAGES_FOLDER, image_filename)
+    # Read the image using OpenCV
+    frame = cv2.imread(image_path)
+    # Check if the image was successfully loaded
+    if frame is None:
+        return jsonify({'error': f'Failed to load image: {image_path}'})
 
+    boxes, scores, classes = model.infer(frame)
+    boxed_frame = draw_boxes(frame, boxes, scores, classes, coco_classes, color_pans)
+    
+    unique_classes = set(classes)
+    class_list = [coco_classes[cls] for cls in unique_classes]
+    
+    
+    annotated_folder = "website/full/static/data/annotated"
+    if not os.path.exists(annotated_folder):
+        os.makedirs(annotated_folder)
+        
+    cv2.imwrite(f"website/full/static/data/annotated/{image_filename}", boxed_frame)
     # Your code to detect objects in the image goes here
     # You can access the image data and the index if needed
     # Perform object detection and return the results
-    detected_objects = [...]  # Example: List of detected objects
-    return jsonify(detected_objects)
+    return jsonify({"path": f"http://127.0.0.1:5000/static/data/annotated/{image_filename}", "classes": class_list})
 
 @app.route('/get_description', methods=['POST'])
 def get_description():
